@@ -5,7 +5,11 @@ import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-
+import java.text.SimpleDateFormat;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
@@ -48,7 +52,7 @@ public class AddProblem {
 		// RandomUtil random=new RandomUtil();
 		test_case_id = RandomUtil.generate();
 		Makedir md = new Makedir();
-		md.makedir(test_case_id);
+		md.makedir(test_case_id,sample_input,sample_output);
 
 		String test_case_score;
 		JsonUtil stu1 = new JsonUtil();
@@ -63,23 +67,40 @@ public class AddProblem {
 			source = doc.select("body > table:nth-child(3) > tbody > tr > td > div:nth-child(15)").text();
 			hint = doc.select("body > table:nth-child(3) > tbody > tr > td > div:nth-child(17)").text();
 		}
-		String languages;
-		JsonUtil stu2 = new JsonUtil();
-		stu2.put("l1", "C++");
-		stu2.put("l2", "Python2");
-		stu2.put("l3", "Python3");
-		stu2.put("l4", "Java");
-		stu2.put("l5", "C");
-		languages = stu2.toString();
+		String languages = "[\"C++\",\"Python2\",\"Python3\",\"Java\",\"C\"]";
+		/*
+		 * JsonUtil stu2 = new JsonUtil(); stu2.put("l1", "C++"); stu2.put("l2",
+		 * "Python2"); stu2.put("l3", "Python3"); stu2.put("l4", "Java"); stu2.put("l5",
+		 * "C"); languages = stu2.toString();
+		 */
 
 		String template;
 		JsonUtil stu3 = new JsonUtil();
 		template = stu3.toString();
-		
-		java.sql.Timestamp create_time = new java.sql.Timestamp(0);// timestamp
 
-		int time_limit = 1000;
-		int memory_limit = 10000;
+		String nowTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new java.util.Date());// 将时间格式转换成符合Timestamp要求的格式.
+		Timestamp create_time = Timestamp.valueOf(nowTime);// 把时间转换timestamp
+
+		String time_li = doc.select(
+				"body > table:nth-child(3) > tbody > tr > td > div.plm > table > tbody > tr:nth-child(1) > td:nth-child(1)")
+				.text();
+		Pattern p = Pattern.compile("\\d+");
+		Matcher m = p.matcher(time_li);
+		int time_limit = 0;
+		if (m.find()) {
+			time_limit = Integer.parseInt(m.group(0).trim());
+		}
+
+		String memory_li = doc.select(
+				"body > table:nth-child(3) > tbody > tr > td > div.plm > table > tbody > tr:nth-child(1) > td:nth-child(3)")
+				.text();
+		Pattern p1 = Pattern.compile("\\d+");
+		Matcher m1 = p1.matcher(memory_li);
+		int memory_limit = 0;
+		if (m1.find()) {
+			memory_limit = Integer.parseInt(m1.group(0).trim()) / 1000;
+		}
+
 		boolean spj = false;
 		String rule_type = "ACM";
 		boolean visible = true;
@@ -168,7 +189,7 @@ public class AddProblem {
 	public static void main(String[] args) {
 
 		try {
-			for (id = 1041; id <= 1042; id++) {
+			for (id = 1000; id <= 4000; id++) {
 				Select(id);
 			}
 		} catch (IOException e) {
